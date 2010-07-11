@@ -25,7 +25,7 @@ public class NotificationCommandProvider implements CommandProvider {
 	@Override
 	public String getHelp() {
 		StringBuilder sb = new StringBuilder();
-		this.addHeader("Handbell notification commands", sb); //$NON-NLS-1$
+		this.addHeader("OSGi notification commands", sb); //$NON-NLS-1$
 		this.addCommand("notify <message> [<title>]", "notify the message", sb); //$NON-NLS-1$ //$NON-NLS-2$
 		return sb.toString();
 	}

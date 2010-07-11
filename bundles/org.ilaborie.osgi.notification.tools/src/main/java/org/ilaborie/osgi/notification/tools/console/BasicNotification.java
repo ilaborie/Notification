@@ -29,8 +29,8 @@ public class BasicNotification implements INotification {
 		if (message == null) {
 			throw new IllegalArgumentException("Message shouldn't being null"); //$NON-NLS-1$
 		}
-		this.message = null;
-		this.title = null;
+		this.message = message;
+		this.title = title;
 	}
 
 	/* (non-Javadoc)

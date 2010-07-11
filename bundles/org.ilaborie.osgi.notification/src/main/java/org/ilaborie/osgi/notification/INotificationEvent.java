@@ -32,7 +32,7 @@ public final class INotificationEvent {
 	public INotificationEvent(Object source, INotification notification,
 			Object detail) {
 		super();
-		if (this.source == null || this.notification == null) {
+		if (source == null || notification == null) {
 			throw new IllegalArgumentException(
 					"Could not able to create the INotificationEvent : source and notification shouldn't being null !"); //$NON-NLS-1$
 		}
