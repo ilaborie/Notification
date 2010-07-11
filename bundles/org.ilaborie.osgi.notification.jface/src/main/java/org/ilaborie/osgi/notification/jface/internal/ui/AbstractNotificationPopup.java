@@ -27,10 +27,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.dnd.SwtUtil;
+import org.ilaborie.osgi.notification.jface.internal.ui.SwtUtil.FadeJob;
+import org.ilaborie.osgi.notification.jface.internal.ui.SwtUtil.IFadeListener;
 
+// TODO: Auto-generated Javadoc
 /**
  * @author Benjamin Pasero
  * @author Mik Kersten
@@ -38,56 +38,70 @@ import org.eclipse.ui.internal.dnd.SwtUtil;
  */
 public abstract class AbstractNotificationPopup extends Window {
 
+	/** The Constant TITLE_HEIGHT. */
 	private static final int TITLE_HEIGHT = 24;
 
-	private static final String LABEL_NOTIFICATION = Messages.AbstractNotificationPopup_Notification;
+	/** The Constant LABEL_JOB_CLOSE. */
+	private static final String LABEL_JOB_CLOSE = "Close Notification Job"; //$NON-NLS-1$
 
-	private static final String LABEL_JOB_CLOSE = Messages.AbstractNotificationPopup_Close_Notification_Job;
-
+	/** The Constant MAX_WIDTH. */
 	private static final int MAX_WIDTH = 400;
 
+	/** The Constant MIN_HEIGHT. */
 	private static final int MIN_HEIGHT = 100;
 
+	/** The Constant DEFAULT_DELAY_CLOSE. */
 	private static final long DEFAULT_DELAY_CLOSE = 8 * 1000;
 
+	/** The Constant PADDING_EDGE. */
 	private static final int PADDING_EDGE = 5;
 
+	/** The delay close. */
 	private long delayClose = DEFAULT_DELAY_CLOSE;
 
+	/** The resources. */
 	protected LocalResourceManager resources;
 
+	/** The color. */
 	private NotificationPopupColors color;
 
+	/** The display. */
 	private final Display display;
 
+	/** The shell. */
 	private Shell shell;
 
+	/** The last used region. */
 	private Region lastUsedRegion;
 
+	/** The last used bg image. */
 	private Image lastUsedBgImage;
 
+	/** The close job. */
 	private final Job closeJob = new Job(LABEL_JOB_CLOSE) {
-
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
-			if (!display.isDisposed()) {
-				display.asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						Shell shell = AbstractNotificationPopup.this.getShell();
-						if (shell == null || shell.isDisposed()) {
-							return;
-						}
+			if (!AbstractNotificationPopup.this.display.isDisposed()) {
+				AbstractNotificationPopup.this.display
+						.asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								final Shell shell = AbstractNotificationPopup.this
+										.getShell();
+								if ((shell == null) || shell.isDisposed()) {
+									return;
+								}
+								if (AbstractNotificationPopup.this
+										.isMouseOver(shell)) {
+									AbstractNotificationPopup.this
+											.scheduleAutoClose();
+									return;
+								}
 
-						if (isMouseOver(shell)) {
-							scheduleAutoClose();
-							return;
-						}
+								AbstractNotificationPopup.this.closeFade();
+							}
 
-						AbstractNotificationPopup.this.closeFade();
-					}
-
-				});
+						});
 			}
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
@@ -97,86 +111,69 @@ public abstract class AbstractNotificationPopup extends Window {
 		}
 	};
 
+	/** The respect display bounds. */
 	private final boolean respectDisplayBounds = true;
 
+	/** The respect monitor bounds. */
 	private final boolean respectMonitorBounds = true;
 
+	/** The fade job. */
 	private FadeJob fadeJob;
 
-	private boolean fadingEnabled;
+	/** The fading enabled. */
+	private boolean fadingEnabled = true;
 
+	/**
+	 * Instantiates a new abstract notification popup.
+	 *
+	 * @param display the display
+	 */
 	public AbstractNotificationPopup(Display display) {
 		this(display, SWT.NO_TRIM | SWT.ON_TOP | SWT.NO_FOCUS | SWT.TOOL);
 	}
 
+	/**
+	 * Instantiates a new abstract notification popup.
+	 *
+	 * @param display the display
+	 * @param style the style
+	 */
 	public AbstractNotificationPopup(Display display, int style) {
 		super(new Shell(display));
-		setShellStyle(style);
+		this.setShellStyle(style);
 
 		this.display = display;
-		resources = new LocalResourceManager(JFaceResources.getResources());
-		initResources();
+		this.resources = new LocalResourceManager(JFaceResources.getResources());
+		this.initResources();
 
-		closeJob.setSystem(true);
+		this.closeJob.setSystem(true);
 	}
 
+	/**
+	 * Checks if is fading enabled.
+	 *
+	 * @return true, if is fading enabled
+	 */
 	public boolean isFadingEnabled() {
-		return fadingEnabled;
+		return this.fadingEnabled;
 	}
 
+	/**
+	 * Sets the fading enabled.
+	 *
+	 * @param fadingEnabled the new fading enabled
+	 */
 	public void setFadingEnabled(boolean fadingEnabled) {
 		this.fadingEnabled = fadingEnabled;
 	}
 
 	/**
-	 * Override to return a customized name. Default is to return the name of the product, specified by the -name (e.g.
-	 * "Eclipse SDK") command line parameter that's associated with the product ID (e.g. "org.eclipse.sdk.ide"). Strips
-	 * the trailing "SDK" for any name, since this part of the label is considered visual noise.
-	 * 
-	 * @return the name to be used in the title of the popup.
+	 * Gets the popup shell image.
+	 *
+	 * @param maximumHeight the maximum height
+	 * @return the popup shell image
 	 */
-	protected String getPopupShellTitle() {
-		String productName = CommonUiUtil.getProductName();
-		if (productName != null) {
-			return productName + " " + LABEL_NOTIFICATION; //$NON-NLS-1$
-		} else {
-			return LABEL_NOTIFICATION;
-		}
-	}
-
-	protected Image getPopupShellImage(int maximumHeight) {
-		// always use the launching workbench window
-		IWorkbenchWindow[] windows = PlatformUI.getWorkbench()
-				.getWorkbenchWindows();
-		if (windows != null && windows.length > 0) {
-			IWorkbenchWindow workbenchWindow = windows[0];
-			if (workbenchWindow != null
-					&& !workbenchWindow.getShell().isDisposed()) {
-				Image image = getShell().getImage();
-				int diff = Integer.MAX_VALUE;
-				if (image != null && image.getBounds().height <= maximumHeight) {
-					diff = maximumHeight - image.getBounds().height;
-				} else {
-					image = null;
-				}
-
-				Image[] images = getShell().getImages();
-				if (images != null && images.length > 0) {
-					// find the icon that is closest in size, but not larger than maximumHeight 
-					for (Image image2 : images) {
-						int newDiff = maximumHeight - image2.getBounds().height;
-						if (newDiff >= 0 && newDiff <= diff) {
-							diff = newDiff;
-							image = image2;
-						}
-					}
-				}
-
-				return image;
-			}
-		}
-		return null;
-	}
+	public abstract Image getTitleImage(int maximumHeight);
 
 	/**
 	 * Override to populate with notifications.
@@ -188,18 +185,21 @@ public abstract class AbstractNotificationPopup extends Window {
 	}
 
 	/**
-	 * Override to customize the title bar
+	 * Override to customize the title bar.
+	 *
+	 * @param parent the parent
 	 */
 	protected void createTitleArea(Composite parent) {
 		((GridData) parent.getLayoutData()).heightHint = TITLE_HEIGHT;
 
-		Label titleImageLabel = new Label(parent, SWT.NONE);
-		titleImageLabel.setImage(getPopupShellImage(TITLE_HEIGHT));
+		final Label titleImageLabel = new Label(parent, SWT.NONE);
+		titleImageLabel.setImage(this.getTitleImage(TITLE_HEIGHT));
 
-		Label titleTextLabel = new Label(parent, SWT.NONE);
-		titleTextLabel.setText(getPopupShellTitle());
-		titleTextLabel.setFont(CommonFonts.BOLD);
-		titleTextLabel.setForeground(getTitleForeground());
+		final Label titleTextLabel = new Label(parent, SWT.NONE);
+		titleTextLabel.setText(this.getTitle());
+		titleTextLabel.setFont(JFaceResources.getFontRegistry().getBold(
+				JFaceResources.DEFAULT_FONT));
+		titleTextLabel.setForeground(this.getTitleForeground());
 		//		titleTextLabel.setForeground(color.getTitleText());
 		titleTextLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				true));
@@ -222,41 +222,60 @@ public abstract class AbstractNotificationPopup extends Window {
 			}
 		});
 		button.addMouseListener(new MouseAdapter() {
-
 			@Override
 			public void mouseUp(MouseEvent e) {
-				close();
-				setReturnCode(CANCEL);
+				AbstractNotificationPopup.this.close();
+				AbstractNotificationPopup.this.setReturnCode(CANCEL);
 			}
 
 		});
 	}
 
+	/**
+	 * Gets the title.
+	 *
+	 * @return the title
+	 */
+	public abstract String getTitle();
+
+	/**
+	 * Gets the title foreground.
+	 *
+	 * @return the title foreground
+	 */
 	protected Color getTitleForeground() {
-		return color.getTitleText();
+		return this.color.getTitleText();
 	}
 
+	/**
+	 * Inits the resources.
+	 */
 	private void initResources() {
-		color = new NotificationPopupColors(display, resources);
+		this.color = new NotificationPopupColors(this.display, this.resources);
 	}
 
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 
-		shell = newShell;
-		newShell.setBackground(color.getBorder());
+		this.shell = newShell;
+		newShell.setBackground(this.color.getBorder());
 	}
 
 	@Override
 	public void create() {
 		super.create();
-		addRegion(shell);
+		this.addRegion(this.shell);
 	}
 
+	/**
+	 * Adds the region.
+	 *
+	 * @param shell the shell
+	 */
 	private void addRegion(Shell shell) {
-		Region region = new Region();
-		Point s = shell.getSize();
+		final Region region = new Region();
+		final Point s = shell.getSize();
 
 		/* Add entire Shell */
 		region.add(0, 0, s.x, s.y);
@@ -298,39 +317,51 @@ public abstract class AbstractNotificationPopup extends Window {
 		shell.setRegion(region);
 
 		/* Remember to dispose later */
-		lastUsedRegion = region;
+		this.lastUsedRegion = region;
 	}
 
+	/**
+	 * Checks if is mouse over.
+	 *
+	 * @param shell the shell
+	 * @return true, if is mouse over
+	 */
 	private boolean isMouseOver(Shell shell) {
-		if (display.isDisposed()) {
+		if (this.display.isDisposed()) {
 			return false;
 		}
-		return shell.getBounds().contains(display.getCursorLocation());
+		return shell.getBounds().contains(this.display.getCursorLocation());
 	}
 
+	/**
+	 * Open.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int open() {
-		if (shell == null || shell.isDisposed()) {
-			shell = null;
-			create();
+		if ((this.shell == null) || this.shell.isDisposed()) {
+			this.shell = null;
+			this.create();
 		}
 
-		constrainShellSize();
-		shell.setLocation(fixupDisplayBounds(shell.getSize(),
-				shell.getLocation()));
+		this.constrainShellSize();
+		this.shell.setLocation(this.fixupDisplayBounds(this.shell.getSize(),
+				this.shell.getLocation()));
 
-		if (isFadingEnabled()) {
-			shell.setAlpha(0);
+		if (this.isFadingEnabled()) {
+			this.shell.setAlpha(0);
 		}
-		shell.setVisible(true);
-		fadeJob = SwtUtil.fadeIn(shell, new IFadeListener() {
+		this.shell.setVisible(true);
+		this.fadeJob = SwtUtil.fadeIn(this.shell, new IFadeListener() {
+			@Override
 			public void faded(Shell shell, int alpha) {
 				if (shell.isDisposed()) {
 					return;
 				}
 
 				if (alpha == 255) {
-					scheduleAutoClose();
+					AbstractNotificationPopup.this.scheduleAutoClose();
 				}
 			}
 		});
@@ -338,12 +369,21 @@ public abstract class AbstractNotificationPopup extends Window {
 		return Window.OK;
 	}
 
+	/**
+	 * Schedule auto close.
+	 */
 	protected void scheduleAutoClose() {
-		if (delayClose > 0) {
-			closeJob.schedule(delayClose);
+		if (this.delayClose > 0) {
+			this.closeJob.schedule(this.delayClose);
 		}
 	}
 
+	/**
+	 * Creates the contents.
+	 *
+	 * @param parent the parent
+	 * @return the control
+	 */
 	@Override
 	protected Control createContents(Composite parent) {
 		((GridLayout) parent.getLayout()).marginWidth = 1;
@@ -358,21 +398,23 @@ public abstract class AbstractNotificationPopup extends Window {
 
 			@Override
 			public void controlResized(ControlEvent e) {
-				Rectangle clArea = outerCircle.getClientArea();
-				lastUsedBgImage = new Image(outerCircle.getDisplay(),
-						clArea.width, clArea.height);
-				GC gc = new GC(lastUsedBgImage);
+				final Rectangle clArea = outerCircle.getClientArea();
+				AbstractNotificationPopup.this.lastUsedBgImage = new Image(
+						outerCircle.getDisplay(), clArea.width, clArea.height);
+				final GC gc = new GC(
+						AbstractNotificationPopup.this.lastUsedBgImage);
 
 				/* Gradient */
-				drawGradient(gc, clArea);
+				this.drawGradient(gc, clArea);
 
 				/* Fix Region Shape */
-				fixRegion(gc, clArea);
+				this.fixRegion(gc, clArea);
 
 				gc.dispose();
 
-				Image oldBGImage = outerCircle.getBackgroundImage();
-				outerCircle.setBackgroundImage(lastUsedBgImage);
+				final Image oldBGImage = outerCircle.getBackgroundImage();
+				outerCircle
+						.setBackgroundImage(AbstractNotificationPopup.this.lastUsedBgImage);
 
 				if (oldBGImage != null) {
 					oldBGImage.dispose();
@@ -380,14 +422,17 @@ public abstract class AbstractNotificationPopup extends Window {
 			}
 
 			private void drawGradient(GC gc, Rectangle clArea) {
-				gc.setForeground(color.getGradientBegin());
-				gc.setBackground(color.getGradientEnd());
+				gc.setForeground(AbstractNotificationPopup.this.color
+						.getGradientBegin());
+				gc.setBackground(AbstractNotificationPopup.this.color
+						.getGradientEnd());
 				gc.fillGradientRectangle(clArea.x, clArea.y, clArea.width,
 						clArea.height, true);
 			}
 
 			private void fixRegion(GC gc, Rectangle clArea) {
-				gc.setForeground(color.getBorder());
+				gc.setForeground(AbstractNotificationPopup.this.color
+						.getBorder());
 
 				/* Fill Top Left */
 				gc.drawPoint(2, 0);
@@ -441,10 +486,11 @@ public abstract class AbstractNotificationPopup extends Window {
 		titleCircle.setLayout(layout);
 
 		/* Create Title Area */
-		createTitleArea(titleCircle);
+		this.createTitleArea(titleCircle);
 
 		/* Outer composite to hold content controlls */
-		Composite outerContentCircle = new Composite(outerCircle, SWT.NONE);
+		final Composite outerContentCircle = new Composite(outerCircle,
+				SWT.NONE);
 		outerContentCircle.setBackgroundMode(SWT.INHERIT_FORCE);
 
 		layout = new GridLayout(1, false);
@@ -457,7 +503,7 @@ public abstract class AbstractNotificationPopup extends Window {
 		outerContentCircle.setBackground(outerCircle.getBackground());
 
 		/* Middle composite to show a 1px black line around the content controls */
-		Composite middleContentCircle = new Composite(outerContentCircle,
+		final Composite middleContentCircle = new Composite(outerContentCircle,
 				SWT.NO_FOCUS);
 		middleContentCircle.setBackgroundMode(SWT.INHERIT_FORCE);
 
@@ -469,10 +515,10 @@ public abstract class AbstractNotificationPopup extends Window {
 		middleContentCircle.setLayout(layout);
 		middleContentCircle.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
 				true, true));
-		middleContentCircle.setBackground(color.getBorder());
+		middleContentCircle.setBackground(this.color.getBorder());
 
 		/* Inner composite containing the content controls */
-		Composite innerContent = new Composite(middleContentCircle,
+		final Composite innerContent = new Composite(middleContentCircle,
 				SWT.NO_FOCUS);
 		innerContent
 				.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -485,67 +531,87 @@ public abstract class AbstractNotificationPopup extends Window {
 		layout.marginRight = 5;
 		innerContent.setLayout(layout);
 
-		innerContent.setBackground(shell.getDisplay().getSystemColor(
+		innerContent.setBackground(this.shell.getDisplay().getSystemColor(
 				SWT.COLOR_WHITE));
 
 		/* Content Area */
-		createContentArea(innerContent);
+		this.createContentArea(innerContent);
 
-		setNullBackground(outerCircle);
+		this.setNullBackground(outerCircle);
 
 		return outerCircle;
 	}
 
+	/**
+	 * Sets the null background.
+	 *
+	 * @param outerCircle the new null background
+	 */
 	private void setNullBackground(final Composite outerCircle) {
-		for (Control c : outerCircle.getChildren()) {
+		for (final Control c : outerCircle.getChildren()) {
 			c.setBackground(null);
 			if (c instanceof Composite) {
-				setNullBackground((Composite) c);
+				this.setNullBackground((Composite) c);
 			}
 		}
 	}
 
 	@Override
 	protected void initializeBounds() {
-		Rectangle clArea = getPrimaryClientArea();
-		Point initialSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		int height = Math.max(initialSize.y, MIN_HEIGHT);
-		int width = Math.min(initialSize.x, MAX_WIDTH);
+		final Rectangle clArea = this.getPrimaryClientArea();
+		final Point initialSize = this.shell.computeSize(SWT.DEFAULT,
+				SWT.DEFAULT);
+		final int height = Math.max(initialSize.y, MIN_HEIGHT);
+		final int width = Math.min(initialSize.x, MAX_WIDTH);
 
-		Point size = new Point(width, height);
-		shell.setLocation(clArea.width + clArea.x - size.x - PADDING_EDGE,
+		final Point size = new Point(width, height);
+		this.shell.setLocation(clArea.width + clArea.x - size.x - PADDING_EDGE,
 				clArea.height + clArea.y - size.y - PADDING_EDGE);
-		shell.setSize(size);
+		this.shell.setSize(size);
 	}
 
+	/**
+	 * Gets the primary client area.
+	 *
+	 * @return the primary client area
+	 */
 	private Rectangle getPrimaryClientArea() {
-		Monitor primaryMonitor = shell.getDisplay().getPrimaryMonitor();
+		final Monitor primaryMonitor = this.shell.getDisplay()
+				.getPrimaryMonitor();
 		return (primaryMonitor != null) ? primaryMonitor.getClientArea()
-				: shell.getDisplay().getClientArea();
+				: this.shell.getDisplay().getClientArea();
 	}
 
+	/**
+	 * Close fade.
+	 */
 	public void closeFade() {
-		if (fadeJob != null) {
-			fadeJob.cancelAndWait(false);
+		if (this.fadeJob != null) {
+			this.fadeJob.cancelAndWait(false);
 		}
-		fadeJob = SwtUtil.fadeOut(getShell(), new IFadeListener() {
+		this.fadeJob = SwtUtil.fadeOut(this.getShell(), new IFadeListener() {
+			@Override
 			public void faded(Shell shell, int alpha) {
 				if (!shell.isDisposed()) {
 					if (alpha == 0) {
 						shell.close();
-					} else if (isMouseOver(shell)) {
-						if (fadeJob != null) {
-							fadeJob.cancelAndWait(false);
+					} else if (AbstractNotificationPopup.this
+							.isMouseOver(shell)) {
+						if (AbstractNotificationPopup.this.fadeJob != null) {
+							AbstractNotificationPopup.this.fadeJob
+									.cancelAndWait(false);
 						}
-						fadeJob = SwtUtil.fastFadeIn(shell,
-								new IFadeListener() {
+						AbstractNotificationPopup.this.fadeJob = SwtUtil
+								.fastFadeIn(shell, new IFadeListener() {
+									@Override
 									public void faded(Shell shell, int alpha) {
 										if (shell.isDisposed()) {
 											return;
 										}
 
 										if (alpha == 255) {
-											scheduleAutoClose();
+											AbstractNotificationPopup.this
+													.scheduleAutoClose();
 										}
 									}
 								});
@@ -557,34 +623,53 @@ public abstract class AbstractNotificationPopup extends Window {
 
 	@Override
 	public boolean close() {
-		resources.dispose();
-		if (lastUsedRegion != null) {
-			lastUsedRegion.dispose();
+		this.resources.dispose();
+		if (this.lastUsedRegion != null) {
+			this.lastUsedRegion.dispose();
 		}
-		if (lastUsedBgImage != null && !lastUsedBgImage.isDisposed()) {
-			lastUsedBgImage.dispose();
+		if ((this.lastUsedBgImage != null)
+				&& !this.lastUsedBgImage.isDisposed()) {
+			this.lastUsedBgImage.dispose();
 		}
 		return super.close();
 	}
 
+	/**
+	 * Gets the delay close.
+	 *
+	 * @return the delay close
+	 */
 	public long getDelayClose() {
-		return delayClose;
+		return this.delayClose;
 	}
 
+	/**
+	 * Sets the delay close.
+	 *
+	 * @param delayClose the new delay close
+	 */
 	public void setDelayClose(long delayClose) {
 		this.delayClose = delayClose;
 	}
 
+	/**
+	 * Fixup display bounds.
+	 *
+	 * @param tipSize the tip size
+	 * @param location the location
+	 * @return the point
+	 */
 	private Point fixupDisplayBounds(Point tipSize, Point location) {
-		if (respectDisplayBounds) {
+		if (this.respectDisplayBounds) {
 			Rectangle bounds;
-			Point rightBounds = new Point(tipSize.x + location.x, tipSize.y
-					+ location.y);
+			final Point rightBounds = new Point(tipSize.x + location.x,
+					tipSize.y + location.y);
 
-			if (respectMonitorBounds) {
-				bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
+			if (this.respectMonitorBounds) {
+				bounds = this.shell.getDisplay().getPrimaryMonitor()
+						.getBounds();
 			} else {
-				bounds = getPrimaryClientArea();
+				bounds = this.getPrimaryClientArea();
 			}
 
 			if (!(bounds.contains(location) && bounds.contains(rightBounds))) {

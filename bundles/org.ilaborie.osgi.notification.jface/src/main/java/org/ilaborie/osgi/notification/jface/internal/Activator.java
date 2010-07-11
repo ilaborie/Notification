@@ -16,7 +16,7 @@ public class Activator implements BundleActivator {
 	 *
 	 * @return the context
 	 */
-	static BundleContext getContext() {
+	public static BundleContext getContext() {
 		return context;
 	}
 
