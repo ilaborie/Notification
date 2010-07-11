@@ -14,13 +14,21 @@ import org.ilaborie.osgi.notification.INotificationListener;
 import org.ilaborie.osgi.notification.INotificationService;
 
 /**
- * @author igor
+ * The Class JFaceNotificationService.
  *
+ * @author igor
  */
 public class JFaceNotificationService implements INotificationService {
 
 	/** The listeners. */
 	private final Set<INotificationListener> listeners = new LinkedHashSet<INotificationListener>();
+
+	/**
+	 * Instantiates a new j face notification service.
+	 */
+	public JFaceNotificationService() {
+		super();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ilaborie.osgi.notification.INotificationService#show(org.ilaborie.osgi.notification.INotification)
