@@ -1,11 +1,17 @@
-package org.ilaborie.osgi.notification.jface.internal;
+package org.ilaborie.osgi.notification.swt.internal;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -63,18 +69,35 @@ public class Activator implements BundleActivator {
 	 * @return the image
 	 */
 	public static Image getImage(String imagePath) {
+		// TODO retrieve a LogService for logging exception
 		Image result = images.get(imagePath);
 		if (result == null) {
 			// Lookup image into icons folder
 			URL url = context.getBundle().getEntry(imagePath);
-			ImageDescriptor descriptor;
 			if (url != null) {
-				descriptor = ImageDescriptor.createFromURL(url);
-			} else {
-				// Oops ! missing image
-				descriptor = ImageDescriptor.getMissingImageDescriptor();
+				InputStream in = null;
+				try {
+					in = new BufferedInputStream(url.openStream());
+					result = new Image(Display.getDefault(), new ImageData(in));
+				} catch (SWTException e) {
+					if (e.code != SWT.ERROR_INVALID_IMAGE) {
+						throw e;
+						// fall through otherwise
+					}
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				} finally {
+					try {
+						if (in != null) {
+							in.close();
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+						// Cannot do more
+					}
+				}
 			}
-			result = descriptor.createImage();
+
 			images.put(imagePath, result);
 		}
 		return result;

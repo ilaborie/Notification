@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: OSGi Notification with Eclipse SWT
+Bundle-SymbolicName: org.ilaborie.osgi.notification.swt
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.ilaborie.osgi.notification.swt.internal.Activator
+Bundle-Vendor: Igor Laborie
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.eclipse.swt,
+ org.eclipse.swt.custom,
+ org.eclipse.swt.graphics,
+ org.eclipse.swt.layout,
+ org.eclipse.swt.widgets,
+ org.ilaborie.osgi.notification,
+ org.osgi.framework;version="1.3.0"
+Bundle-ActivationPolicy: lazy
+Service-Component: OSGI-INF/swtNotify.xml

@@ -1,36 +1,39 @@
 /**
  * 
  */
-package org.ilaborie.osgi.notification.jface;
+package org.ilaborie.osgi.notification.swt;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.ilaborie.osgi.notification.INotification;
 import org.ilaborie.osgi.notification.INotificationEvent;
 import org.ilaborie.osgi.notification.INotificationListener;
 import org.ilaborie.osgi.notification.INotificationService;
-import org.ilaborie.osgi.notification.jface.internal.Activator;
+import org.ilaborie.osgi.notification.swt.internal.Activator;
 
 /**
  * The Class JFaceNotificationService.
  *
  * @author igor
  */
-public class JFaceNotificationService implements INotificationService {
+public class SwtNotificationService implements INotificationService {
 
 	/** The listeners. */
 	private final Set<INotificationListener> listeners = new LinkedHashSet<INotificationListener>();
 
+	/** The icon provider. */
+	private INotificationIconProvider iconProvider = null;
+
 	/**
 	 * Instantiates a new j face notification service.
 	 */
-	public JFaceNotificationService() {
+	public SwtNotificationService() {
 		super();
 	}
 
@@ -59,18 +62,18 @@ public class JFaceNotificationService implements INotificationService {
 	 * @param notification the notification
 	 */
 	private void showNotification(INotification notification) {
-		final Image titleImage = this.getTitleImage(notification);
+		Display display = Display.getDefault();
+		Shell activeShell = display.getActiveShell();
+		Shell shell = NotifierDialog.notify(notification.getTitle(),
+				notification.getMessage(), this.getTitleImage(notification));
 
-		NotificationPopup notificationPopup = new NotificationPopup(
-				Display.getCurrent(), notification) {
-			@Override
-			protected Image getNotificationImage(INotification notification) {
-				return titleImage;
+		if (activeShell == null && shell != null) {
+			shell.open();
+			while (!shell.isDisposed()) {
+				if (!display.readAndDispatch()) {
+					display.sleep();
+				}
 			}
-		};
-		if (notificationPopup.open() == Window.OK) {
-			this.fireNotificationActivatedEvent(new INotificationEvent(this,
-					notification));
 		}
 	}
 
@@ -81,7 +84,15 @@ public class JFaceNotificationService implements INotificationService {
 	 * @return the title image
 	 */
 	private Image getTitleImage(INotification notification) {
-		return Activator.getImage("icons/handbell_16.png"); //$NON-NLS-1$
+		Image result = null;
+		if (this.getIconProvider() != null) {
+			result = this.getIconProvider().getIcon(notification);
+		}
+		if (result == null) {
+			// Use a default Image
+			result = Activator.getImage("icons/bell.png"); //$NON-NLS-1$
+		}
+		return result;
 	}
 
 	/**
@@ -166,6 +177,24 @@ public class JFaceNotificationService implements INotificationService {
 				this.listeners.remove(listener);
 			}
 		}
+	}
+
+	/**
+	 * Gets the icon provider.
+	 *
+	 * @return the iconProvider
+	 */
+	public INotificationIconProvider getIconProvider() {
+		return this.iconProvider;
+	}
+
+	/**
+	 * Sets the icon provider.
+	 *
+	 * @param iconProvider the iconProvider to set
+	 */
+	public void setIconProvider(INotificationIconProvider iconProvider) {
+		this.iconProvider = iconProvider;
 	}
 
 }
