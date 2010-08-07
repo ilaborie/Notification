@@ -14,11 +14,11 @@ public class FadingShell {
 	private static final int TRANSPARENT = 0x00;
 
 	/** The Constant FADE_IN_STEP. */
-	private static final int FADE_IN_STEP = 8;
+	private static final int FADE_IN_STEP = 32;
 
 	// how many tick steps we use when fading out 
 	/** The Constant FADE_OUT_STEP. */
-	private static final int FADE_OUT_STEP = 8;
+	private static final int FADE_OUT_STEP = 16;
 
 	// Attributes
 	/** The shell. */

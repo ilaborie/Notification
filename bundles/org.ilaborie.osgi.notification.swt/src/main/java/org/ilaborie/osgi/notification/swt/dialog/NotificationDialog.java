@@ -4,11 +4,16 @@
 package org.ilaborie.osgi.notification.swt.dialog;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.ilaborie.osgi.notification.INotification;
 import org.ilaborie.osgi.notification.swt.INotificationColors;
@@ -21,6 +26,7 @@ import org.ilaborie.osgi.notification.swt.INotificationFonts;
  */
 public class NotificationDialog {
 
+	// Constants
 	/** The default transparency. */
 	private static final int ALPHA_DEFAULT = 0xEE;
 
@@ -47,6 +53,10 @@ public class NotificationDialog {
 	}
 
 	// Attributes
+
+	/** The stacked position. */
+	private static Integer stackedPosition = 0;
+
 	/** The display. */
 	private final Display display;
 
@@ -111,14 +121,34 @@ public class NotificationDialog {
 		this.configureShell(colors, fonts);
 		this.shell.pack();
 
-		// TODO Position
-
-		// TODO Region (round rectangle)
+		this.shell.addShellListener(new ShellAdapter() {
+			/* (non-Javadoc)
+			 * @see org.eclipse.swt.events.ShellAdapter#shellClosed(org.eclipse.swt.events.ShellEvent)
+			 */
+			@Override
+			public void shellClosed(ShellEvent e) {
+				synchronized (stackedPosition) {
+					stackedPosition -= shell.getSize().y + VERTICAL_PADDING;
+					System.out.println("Stacked: " + stackedPosition);
+				}
+				super.shellClosed(e);
+			}
+		});
 
 		// Register selection listener
 		if (this.listener != null) {
 			this.shell.addListener(SWT.Selection, this.listener);
 		}
+
+		// Position
+		synchronized (NotificationDialog.stackedPosition) {
+			Point location = this.getLocation();
+			this.shell.setLocation(location);
+			stackedPosition += this.shell.getSize().y + VERTICAL_PADDING;
+			System.out.println("Stacked: " + stackedPosition);
+		}
+
+		// TODO Region (round rectangle)
 
 		// Fading
 		if (fade) {
@@ -146,6 +176,24 @@ public class NotificationDialog {
 			}
 		}
 		this.display.dispose();
+	}
+
+	/**
+	 * Gets the location.
+	 *
+	 * @return the location
+	 */
+	private Point getLocation() {
+		// TODO handle preference (TOP/BOTTOM, LEFT/RIGHT)
+		// Top Left
+		Monitor monitor = this.display.getPrimaryMonitor();
+		Rectangle clientArea = monitor.getClientArea();
+		Point result = new Point(0, 0);
+		result.x = (clientArea.x + clientArea.width)
+				- (this.shell.getSize().x + HORIZONTAL_PADDING);
+		result.y = (clientArea.y)
+				+ (this.shell.getSize().y + VERTICAL_PADDING + NotificationDialog.stackedPosition);
+		return result;
 	}
 
 	/**
