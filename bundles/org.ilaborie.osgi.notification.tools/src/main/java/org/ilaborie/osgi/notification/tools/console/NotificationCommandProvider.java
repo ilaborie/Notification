@@ -9,6 +9,7 @@ import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 import org.ilaborie.osgi.notification.INotification;
 import org.ilaborie.osgi.notification.INotificationService;
+import org.ilaborie.osgi.notification.impl.NotificationImpl;
 
 /**
  * @author igor
@@ -45,7 +46,7 @@ public class NotificationCommandProvider implements CommandProvider {
 		} else {
 			assert message != null;
 			String title = intp.nextArgument();
-			INotification notification = new BasicNotification(message, title);
+			INotification notification = new NotificationImpl(title, message);
 			this.notificationService.show(notification);
 		}
 		return null;

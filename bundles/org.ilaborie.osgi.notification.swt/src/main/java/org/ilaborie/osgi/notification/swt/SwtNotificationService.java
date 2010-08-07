@@ -8,13 +8,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.ilaborie.osgi.notification.INotification;
-import org.ilaborie.osgi.notification.INotificationEvent;
 import org.ilaborie.osgi.notification.INotificationListener;
 import org.ilaborie.osgi.notification.INotificationService;
+import org.ilaborie.osgi.notification.NotificationEvent;
+import org.ilaborie.osgi.notification.swt.dialog.NotificationDialog;
 import org.ilaborie.osgi.notification.swt.internal.Activator;
 
 /**
@@ -24,11 +24,52 @@ import org.ilaborie.osgi.notification.swt.internal.Activator;
  */
 public class SwtNotificationService implements INotificationService {
 
+	/**
+	 * The listener interface for receiving notificationSelection events.
+	 * The class that is interested in processing a notificationSelection
+	 * event implements this interface, and the object created
+	 * with that class is registered with a component using the
+	 * component's <code>addNotificationSelectionListener<code> method. When
+	 * the notificationSelection event occurs, that object's appropriate
+	 * method is invoked.
+	 *
+	 * @author igor
+	 */
+	private final class NotificationSelectionListener implements Listener {
+
+		/** The notification. */
+		private final INotification notification;
+
+		/** The notification service. */
+		private final SwtNotificationService notificationService;
+
+		/**
+		 * Instantiates a new notification selection listener.
+		 *
+		 * @param notificationService the notification service
+		 * @param notification the notification
+		 */
+		NotificationSelectionListener(
+				SwtNotificationService notificationService,
+				INotification notification) {
+			super();
+			this.notificationService = notificationService;
+			this.notification = notification;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.swt.widgets.Listener#handleEvent(org.eclipse.swt.widgets.Event)
+		 */
+		@Override
+		public void handleEvent(Event event) {
+			this.notificationService
+					.fireNotificationActivatedEvent(new NotificationEvent(
+							this.notificationService, this.notification, event));
+		}
+	}
+
 	/** The listeners. */
 	private final Set<INotificationListener> listeners = new LinkedHashSet<INotificationListener>();
-
-	/** The icon provider. */
-	private INotificationIconProvider iconProvider = null;
 
 	/**
 	 * Instantiates a new j face notification service.
@@ -46,12 +87,12 @@ public class SwtNotificationService implements INotificationService {
 			throw new IllegalArgumentException(
 					"Notification shoudn't being null !"); //$NON-NLS-1$
 		}
-		if (this.fireBeforeNotificationEvent(new INotificationEvent(this,
+		if (this.fireBeforeNotificationEvent(new NotificationEvent(this,
 				notification))) {
 
 			this.showNotification(notification);
 
-			this.fireAfterNotificationEvent(new INotificationEvent(this,
+			this.fireAfterNotificationEvent(new NotificationEvent(this,
 					notification));
 		}
 	}
@@ -61,38 +102,12 @@ public class SwtNotificationService implements INotificationService {
 	 *
 	 * @param notification the notification
 	 */
-	private void showNotification(INotification notification) {
-		Display display = Display.getDefault();
-		Shell activeShell = display.getActiveShell();
-		Shell shell = NotifierDialog.notify(notification.getTitle(),
-				notification.getMessage(), this.getTitleImage(notification));
-
-		if (activeShell == null && shell != null) {
-			shell.open();
-			while (!shell.isDisposed()) {
-				if (!display.readAndDispatch()) {
-					display.sleep();
-				}
-			}
-		}
-	}
-
-	/**
-	 * Gets the title image.
-	 *
-	 * @param notification the notification
-	 * @return the title image
-	 */
-	private Image getTitleImage(INotification notification) {
-		Image result = null;
-		if (this.getIconProvider() != null) {
-			result = this.getIconProvider().getIcon(notification);
-		}
-		if (result == null) {
-			// Use a default Image
-			result = Activator.getImage("icons/bell.png"); //$NON-NLS-1$
-		}
-		return result;
+	private void showNotification(final INotification notification) {
+		NotificationDialog dialog = NotificationDialog
+				.createNotificationDialog(Activator.getINotificationColors(),
+						notification, new NotificationSelectionListener(this,
+								notification));
+		dialog.show();
 	}
 
 	/**
@@ -101,7 +116,7 @@ public class SwtNotificationService implements INotificationService {
 	 * @param event the event
 	 * @return true, if successful
 	 */
-	private boolean fireBeforeNotificationEvent(INotificationEvent event) {
+	private boolean fireBeforeNotificationEvent(NotificationEvent event) {
 		boolean result = true;
 		assert event != null;
 		List<INotificationListener> allListeners = new ArrayList<INotificationListener>(
@@ -124,7 +139,7 @@ public class SwtNotificationService implements INotificationService {
 	 *
 	 * @param event the event
 	 */
-	private void fireNotificationActivatedEvent(INotificationEvent event) {
+	void fireNotificationActivatedEvent(NotificationEvent event) {
 		assert event != null;
 		List<INotificationListener> allListeners = new ArrayList<INotificationListener>(
 				this.listeners);
@@ -142,7 +157,7 @@ public class SwtNotificationService implements INotificationService {
 	 *
 	 * @param event the event
 	 */
-	private void fireAfterNotificationEvent(INotificationEvent event) {
+	private void fireAfterNotificationEvent(NotificationEvent event) {
 		assert event != null;
 		List<INotificationListener> allListeners = new ArrayList<INotificationListener>(
 				this.listeners);
@@ -178,23 +193,4 @@ public class SwtNotificationService implements INotificationService {
 			}
 		}
 	}
-
-	/**
-	 * Gets the icon provider.
-	 *
-	 * @return the iconProvider
-	 */
-	public INotificationIconProvider getIconProvider() {
-		return this.iconProvider;
-	}
-
-	/**
-	 * Sets the icon provider.
-	 *
-	 * @param iconProvider the iconProvider to set
-	 */
-	public void setIconProvider(INotificationIconProvider iconProvider) {
-		this.iconProvider = iconProvider;
-	}
-
 }

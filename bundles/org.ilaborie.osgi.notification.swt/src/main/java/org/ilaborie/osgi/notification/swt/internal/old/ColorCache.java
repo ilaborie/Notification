@@ -1,4 +1,4 @@
-package org.ilaborie.osgi.notification.swt.internal;
+package org.ilaborie.osgi.notification.swt.internal.old;
 
 import java.util.HashMap;
 import java.util.Iterator;

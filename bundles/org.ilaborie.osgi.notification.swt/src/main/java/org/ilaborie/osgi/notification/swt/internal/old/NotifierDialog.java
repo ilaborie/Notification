@@ -1,4 +1,4 @@
-package org.ilaborie.osgi.notification.swt;
+package org.ilaborie.osgi.notification.swt.internal.old;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,8 +22,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.ilaborie.osgi.notification.swt.internal.ColorCache;
-import org.ilaborie.osgi.notification.swt.internal.FontCache;
 
 /**
  * The Class NotifierDialog.

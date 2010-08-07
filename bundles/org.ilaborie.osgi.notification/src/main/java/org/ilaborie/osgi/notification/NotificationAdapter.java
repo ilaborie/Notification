@@ -14,7 +14,7 @@ public class NotificationAdapter implements INotificationListener {
 	 * @see org.ilaborie.osgi.notification.INotificationListener#beforeNotification(org.ilaborie.osgi.notification.INotificationEvent)
 	 */
 	@Override
-	public boolean beforeNotification(INotificationEvent event) {
+	public boolean beforeNotification(NotificationEvent event) {
 		return true;
 	}
 
@@ -22,7 +22,7 @@ public class NotificationAdapter implements INotificationListener {
 	 * @see org.ilaborie.osgi.notification.INotificationListener#onNotificationActivated(org.ilaborie.osgi.notification.INotificationEvent)
 	 */
 	@Override
-	public void onNotificationActivated(INotificationEvent event) {
+	public void onNotificationActivated(NotificationEvent event) {
 		// Do nothing
 	}
 
@@ -30,7 +30,7 @@ public class NotificationAdapter implements INotificationListener {
 	 * @see org.ilaborie.osgi.notification.INotificationListener#afterNotification(org.ilaborie.osgi.notification.INotificationEvent)
 	 */
 	@Override
-	public void afterNotification(INotificationEvent event) {
+	public void afterNotification(NotificationEvent event) {
 		// Do nothing
 	}
 

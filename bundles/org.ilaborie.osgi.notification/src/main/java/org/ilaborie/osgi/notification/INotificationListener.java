@@ -21,20 +21,20 @@ public interface INotificationListener {
 	 * @param event the event
 	 * @return true, if notification should been shown
 	 */
-	boolean beforeNotification(INotificationEvent event);
+	boolean beforeNotification(NotificationEvent event);
 
 	/**
 	 * On notification activated.
 	 *
 	 * @param event the event
 	 */
-	void onNotificationActivated(INotificationEvent event);
+	void onNotificationActivated(NotificationEvent event);
 
 	/**
 	 * After notification.
 	 *
 	 * @param event the event
 	 */
-	void afterNotification(INotificationEvent event);
+	void afterNotification(NotificationEvent event);
 
 }

@@ -12,9 +12,11 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
+import org.ilaborie.osgi.notification.swt.INotificationColors;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class Activator.
  */
@@ -26,12 +28,15 @@ public class Activator implements BundleActivator {
 	/** The images. */
 	private static Map<String, Image> images;
 
+	/** The notification colors. */
+	private static NotificationColorsImpl notificationColors;
+
 	/**
 	 * Gets the context.
 	 *
 	 * @return the context
 	 */
-	public static BundleContext getContext() {
+	static BundleContext getContext() {
 		return context;
 	}
 
@@ -42,6 +47,10 @@ public class Activator implements BundleActivator {
 	@Override
 	public void start(BundleContext bundleContext) throws Exception {
 		Activator.context = bundleContext;
+
+		// Initialize colors
+		Activator.notificationColors = new NotificationColorsImpl();
+
 		// Initialize Image Map
 		images = new HashMap<String, Image>();
 	}
@@ -53,6 +62,12 @@ public class Activator implements BundleActivator {
 	@Override
 	public void stop(BundleContext bundleContext) throws Exception {
 		Activator.context = null;
+
+		// clean colors
+		if (Activator.notificationColors != null) {
+			Activator.notificationColors.dispose();
+		}
+
 		// Clean images
 		if (images != null) {
 			for (Image img : images.values()) {
@@ -101,6 +116,19 @@ public class Activator implements BundleActivator {
 			images.put(imagePath, result);
 		}
 		return result;
+	}
+
+	/**
+	 * Gets the i notification colors.
+	 *
+	 * @return the i notification colors
+	 */
+	public static INotificationColors getINotificationColors() {
+		INotificationColors colors = null;
+		if (notificationColors != null) {
+			colors = notificationColors;
+		}
+		return colors;
 	}
 
 }

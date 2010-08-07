@@ -12,7 +12,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.ilaborie.osgi.notification.INotification;
-import org.ilaborie.osgi.notification.INotificationEvent;
+import org.ilaborie.osgi.notification.NotificationEvent;
 import org.ilaborie.osgi.notification.INotificationListener;
 import org.ilaborie.osgi.notification.INotificationService;
 import org.ilaborie.osgi.notification.jface.internal.Activator;
@@ -43,12 +43,12 @@ public class JFaceNotificationService implements INotificationService {
 			throw new IllegalArgumentException(
 					"Notification shoudn't being null !"); //$NON-NLS-1$
 		}
-		if (this.fireBeforeNotificationEvent(new INotificationEvent(this,
+		if (this.fireBeforeNotificationEvent(new NotificationEvent(this,
 				notification))) {
 
 			this.showNotification(notification);
 
-			this.fireAfterNotificationEvent(new INotificationEvent(this,
+			this.fireAfterNotificationEvent(new NotificationEvent(this,
 					notification));
 		}
 	}
@@ -69,7 +69,7 @@ public class JFaceNotificationService implements INotificationService {
 			}
 		};
 		if (notificationPopup.open() == Window.OK) {
-			this.fireNotificationActivatedEvent(new INotificationEvent(this,
+			this.fireNotificationActivatedEvent(new NotificationEvent(this,
 					notification));
 		}
 	}
@@ -90,7 +90,7 @@ public class JFaceNotificationService implements INotificationService {
 	 * @param event the event
 	 * @return true, if successful
 	 */
-	private boolean fireBeforeNotificationEvent(INotificationEvent event) {
+	private boolean fireBeforeNotificationEvent(NotificationEvent event) {
 		boolean result = true;
 		assert event != null;
 		List<INotificationListener> allListeners = new ArrayList<INotificationListener>(
@@ -113,7 +113,7 @@ public class JFaceNotificationService implements INotificationService {
 	 *
 	 * @param event the event
 	 */
-	private void fireNotificationActivatedEvent(INotificationEvent event) {
+	private void fireNotificationActivatedEvent(NotificationEvent event) {
 		assert event != null;
 		List<INotificationListener> allListeners = new ArrayList<INotificationListener>(
 				this.listeners);
@@ -131,7 +131,7 @@ public class JFaceNotificationService implements INotificationService {
 	 *
 	 * @param event the event
 	 */
-	private void fireAfterNotificationEvent(INotificationEvent event) {
+	private void fireAfterNotificationEvent(NotificationEvent event) {
 		assert event != null;
 		List<INotificationListener> allListeners = new ArrayList<INotificationListener>(
 				this.listeners);

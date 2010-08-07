@@ -8,7 +8,7 @@ package org.ilaborie.osgi.notification;
  *
  * @author igor
  */
-public final class INotificationEvent {
+public final class NotificationEvent {
 
 	/** The source. */
 	private final Object source;
@@ -29,7 +29,7 @@ public final class INotificationEvent {
 	 * @param notification the notification. Shouldn't being <code>null</code>
 	 * @param detail the detail. Could be null if no detail associated to event
 	 */
-	public INotificationEvent(Object source, INotification notification,
+	public NotificationEvent(Object source, INotification notification,
 			Object detail) {
 		super();
 		if (source == null || notification == null) {
@@ -48,7 +48,7 @@ public final class INotificationEvent {
 	 * @param source the source. Shouldn't being <code>null</code>
 	 * @param notification the notification. Shouldn't being <code>null</code>
 	 */
-	public INotificationEvent(Object source, INotification notification) {
+	public NotificationEvent(Object source, INotification notification) {
 		this(source, notification, null);
 	}
 
