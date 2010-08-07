@@ -17,7 +17,6 @@ import org.ilaborie.osgi.notification.swt.INotificationFonts;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class Activator.
  */

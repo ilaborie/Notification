@@ -28,7 +28,7 @@ public class ShellCloser implements Runnable {
 	private final class ShellOverListener extends MouseTrackAdapter {
 
 		/** The shell. */
-		private final Shell localShell;
+		private final ShellCloser shellCloser;
 
 		/** The mouse over. */
 		private boolean mouseOver = false;
@@ -39,11 +39,11 @@ public class ShellCloser implements Runnable {
 		/**
 		 * Instantiates a new shell over listener.
 		 *
-		 * @param shell the shell
+		 * @param shellCloser the shell closer
 		 */
-		public ShellOverListener(Shell shell) {
+		public ShellOverListener(ShellCloser shellCloser) {
 			super();
-			this.localShell = shell;
+			this.shellCloser = shellCloser;
 		}
 
 		/* (non-Javadoc)
@@ -60,8 +60,8 @@ public class ShellCloser implements Runnable {
 		@Override
 		public void mouseExit(MouseEvent e) {
 			this.mouseOver = true;
-			if (this.needToClose && !this.localShell.isDisposed()) {
-				this.localShell.close();
+			if (this.needToClose) {
+				this.shellCloser.closeShell();
 			}
 		}
 
@@ -84,12 +84,14 @@ public class ShellCloser implements Runnable {
 		}
 	}
 
+	// Attributes
 	/** The shell. */
 	private final Shell shell;
 
 	/** The shell over listener. */
 	private final ShellOverListener shellOverListener;
 
+	// Constructors
 	/**
 	 * Instantiates a new shell closer.
 	 *
@@ -101,10 +103,11 @@ public class ShellCloser implements Runnable {
 			throw new IllegalArgumentException("Shell shouldn't being empty !"); //$NON-NLS-1$
 		}
 		this.shell = shell;
-		this.shellOverListener = new ShellOverListener(this.shell);
+		this.shellOverListener = new ShellOverListener(this);
 		this.shell.addMouseTrackListener(this.shellOverListener);
 	}
 
+	// Methods
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
@@ -112,10 +115,19 @@ public class ShellCloser implements Runnable {
 	public void run() {
 		if (!this.shell.isDisposed()) {
 			if (!this.shellOverListener.isMouseOver()) {
-				this.shell.close();
+				this.closeShell();
 			} else {
 				this.shellOverListener.setNeedToClose(true);
 			}
+		}
+	}
+
+	/**
+	 * Close shell.
+	 */
+	protected void closeShell() {
+		if (!this.shell.isDisposed()) {
+			this.shell.close();
 		}
 	}
 

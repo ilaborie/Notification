@@ -22,7 +22,7 @@ import org.ilaborie.osgi.notification.swt.INotificationFonts;
 public class NotificationDialog {
 
 	/** The default transparency. */
-	private static final int TRANSPARENCY_DEFAULT = 0xEE;
+	private static final int ALPHA_DEFAULT = 0xEE;
 
 	/** The vertical padding. */
 	private static final int VERTICAL_PADDING = 5;
@@ -95,7 +95,7 @@ public class NotificationDialog {
 	 * @param fonts the fonts
 	 */
 	public void show(INotificationColors colors, INotificationFonts fonts) {
-		this.show(colors, fonts, false);
+		this.show(colors, fonts, true);
 	}
 
 	/**
@@ -120,14 +120,25 @@ public class NotificationDialog {
 			this.shell.addListener(SWT.Selection, this.listener);
 		}
 
-		// TODO fading
-
-		// close expireTime
-		this.display.timerExec((int) this.notification.getExpireTime(),
-				new ShellCloser(this.shell));
-
-		// Open shell
-		this.shell.open(); // TODO use urgency
+		// Fading
+		if (fade) {
+			this.shell.setAlpha(0x00);
+			final FadingShell fadingShell = new FadingShell(this.shell,
+					ALPHA_DEFAULT, this.notification.getExpireTime());
+			// Open shell
+			this.shell.open();
+			// Fade in
+			fadingShell.fadeIn();
+			// fadingShell also handle fade out with the timeout 
+		} else {
+			// No Fading
+			this.shell.setAlpha(ALPHA_DEFAULT);
+			// Open shell
+			this.shell.open();
+			// close expireTime
+			this.display.timerExec(this.notification.getExpireTime(),
+					new ShellCloser(this.shell));
+		}
 
 		while (!this.shell.isDisposed()) {
 			if (!this.display.readAndDispatch()) {
@@ -149,11 +160,8 @@ public class NotificationDialog {
 		assert this.shell != null;
 		assert this.notification != null;
 
-		// TODO fix Layout 
-
 		// Shell
-		this.shell.setLayout(new GridLayout());
-		this.shell.setAlpha(TRANSPARENCY_DEFAULT);
+		this.shell.setLayout(new GridLayout(2, false));
 		if (colors != null) {
 			this.shell.setBackground(colors.getBackgroundColor());
 			this.shell.setForeground(colors.getForegroundColor());
@@ -170,7 +178,7 @@ public class NotificationDialog {
 		this.lblIcon.setLayoutData(gridData);
 
 		// Title
-		this.lblTitle = new Label(this.shell, SWT.NONE);
+		this.lblTitle = new Label(this.shell, SWT.WRAP);
 		if (this.notification.getTitle() != null) {
 			this.lblTitle.setText(this.notification.getTitle());
 		}
@@ -185,7 +193,7 @@ public class NotificationDialog {
 		this.lblTitle.setLayoutData(gridData);
 
 		// Message
-		this.lblMessage = new Label(this.shell, SWT.NONE);
+		this.lblMessage = new Label(this.shell, SWT.WRAP);
 		this.lblMessage.setText(this.notification.getMessage());
 		if (colors != null) {
 			this.lblMessage.setForeground(colors.getMessageColor());

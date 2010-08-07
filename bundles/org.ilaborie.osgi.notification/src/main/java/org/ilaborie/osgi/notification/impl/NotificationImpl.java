@@ -33,10 +33,10 @@ public class NotificationImpl implements INotification {
 	private Object category;
 
 	/** The urgency. */
-	private final Urgency urgency = URGENCY_DEFAULT;
+	private Urgency urgency = URGENCY_DEFAULT;
 
 	/** The expire time. */
-	private final long expireTime = EXPIRE_TIME_DEFAULT;
+	private int expireTime = EXPIRE_TIME_DEFAULT;
 
 	/** The data. */
 	private final Map<String, Object> data = new HashMap<String, Object>();
@@ -136,7 +136,7 @@ public class NotificationImpl implements INotification {
 	 * @see org.ilaborie.osgi.notification.INotification#getExpireTime()
 	 */
 	@Override
-	public long getExpireTime() {
+	public int getExpireTime() {
 		return this.expireTime;
 	}
 
@@ -216,4 +216,21 @@ public class NotificationImpl implements INotification {
 		this.category = category;
 	}
 
+	/**
+	 * Sets the urgency.
+	 *
+	 * @param urgency the urgency to set
+	 */
+	public void setUrgency(Urgency urgency) {
+		this.urgency = urgency;
+	}
+
+	/**
+	 * Sets the expire time.
+	 *
+	 * @param expireTime the expireTime to set
+	 */
+	public void setExpireTime(int expireTime) {
+		this.expireTime = expireTime;
+	}
 }

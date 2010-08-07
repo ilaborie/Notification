@@ -14,7 +14,7 @@ import java.util.Map;
 public interface INotification {
 
 	/** The default expire time. */
-	long EXPIRE_TIME_DEFAULT = 5 * 1000; // 5s
+	int EXPIRE_TIME_DEFAULT = 5 * 1000; // 5s
 
 	/** The default urgency. */
 	Urgency URGENCY_DEFAULT = Urgency.NORMAL;
@@ -59,7 +59,7 @@ public interface INotification {
 	 *
 	 * @return the expire time
 	 */
-	long getExpireTime();
+	int getExpireTime();
 
 	/**
 	 * Gets the extra data.
