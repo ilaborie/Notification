@@ -104,10 +104,10 @@ public class SwtNotificationService implements INotificationService {
 	 */
 	private void showNotification(final INotification notification) {
 		NotificationDialog dialog = NotificationDialog
-				.createNotificationDialog(Activator.getINotificationColors(),
-						notification, new NotificationSelectionListener(this,
-								notification));
-		dialog.show();
+				.createNotificationDialog(notification,
+						new NotificationSelectionListener(this, notification));
+		dialog.show(Activator.getINotificationColors(),
+				Activator.getINotificationFonts());
 	}
 
 	/**

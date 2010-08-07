@@ -64,8 +64,10 @@ public class NotificationColorsImpl implements INotificationColors {
 	public Color getBackgroundColor() {
 		Color result = this.colors.get(ColorKey.BACKGROUND);
 		if (result == null) {
-			result = Display.getDefault().getSystemColor(
-					SWT.COLOR_TITLE_BACKGROUND);
+			Display display = Display.getDefault();
+			Color systemColor = display
+					.getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
+			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.BACKGROUND, result);
 		}
 		return result;
@@ -78,8 +80,10 @@ public class NotificationColorsImpl implements INotificationColors {
 	public Color getForegroundColor() {
 		Color result = this.colors.get(ColorKey.FOREGROUND);
 		if (result == null) {
-			result = Display.getDefault().getSystemColor(
-					SWT.COLOR_TITLE_FOREGROUND);
+			Display display = Display.getDefault();
+			Color systemColor = display
+					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
+			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.FOREGROUND, result);
 		}
 		return result;
@@ -92,8 +96,10 @@ public class NotificationColorsImpl implements INotificationColors {
 	public Color getTitleColor() {
 		Color result = this.colors.get(ColorKey.TITLE_FOREGROUND);
 		if (result == null) {
-			result = Display.getDefault().getSystemColor(
-					SWT.COLOR_TITLE_FOREGROUND);
+			Display display = Display.getDefault();
+			Color systemColor = display
+					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
+			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.TITLE_FOREGROUND, result);
 		}
 		return result;
@@ -106,8 +112,10 @@ public class NotificationColorsImpl implements INotificationColors {
 	public Color getMessageColor() {
 		Color result = this.colors.get(ColorKey.MESSAGE_FOREGROUND);
 		if (result == null) {
-			result = Display.getDefault().getSystemColor(
-					SWT.COLOR_TITLE_FOREGROUND);
+			Display display = Display.getDefault();
+			Color systemColor = display
+					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
+			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.MESSAGE_FOREGROUND, result);
 		}
 		return result;

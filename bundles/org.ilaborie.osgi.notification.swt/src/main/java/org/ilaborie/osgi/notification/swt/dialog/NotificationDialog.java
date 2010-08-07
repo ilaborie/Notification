@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.ilaborie.osgi.notification.INotification;
 import org.ilaborie.osgi.notification.swt.INotificationColors;
+import org.ilaborie.osgi.notification.swt.INotificationFonts;
 
 /**
  * The Class NotificationDialog.
@@ -23,20 +24,24 @@ public class NotificationDialog {
 	/** The default transparency. */
 	private static final int TRANSPARENCY_DEFAULT = 0xEE;
 
+	/** The vertical padding. */
+	private static final int VERTICAL_PADDING = 5;
+
+	/** The horizontal padding. */
+	private static final int HORIZONTAL_PADDING = 5;
+
 	// Factory
 	/**
 	 * Creates the notification dialog.
 	 *
-	 * @param colors the colors
 	 * @param notification the notification
 	 * @param listener the listener
 	 * @return the notification dialog
 	 */
 	public static NotificationDialog createNotificationDialog(
-			INotificationColors colors, INotification notification,
-			Listener listener) {
+			INotification notification, Listener listener) {
 		Display display = Display.getDefault();
-		NotificationDialog result = new NotificationDialog(display, colors,
+		NotificationDialog result = new NotificationDialog(display,
 				notification, listener);
 		return result;
 	}
@@ -63,24 +68,19 @@ public class NotificationDialog {
 	/** The listener. */
 	private final Listener listener;
 
-	/** The colors. */
-	private final INotificationColors colors;
-
 	// Constructor
 	/**
 	 * Instantiates a new notification dialog.
 	 *
 	 * @param display the display
-	 * @param colors the colors
 	 * @param notification the notification
 	 * @param listener the listener
 	 */
-	private NotificationDialog(Display display, INotificationColors colors,
-			INotification notification, Listener listener) {
+	private NotificationDialog(Display display, INotification notification,
+			Listener listener) {
 		super();
 		assert display != null;
 		this.display = display;
-		this.colors = colors;
 		this.notification = notification;
 		this.listener = listener;
 	}
@@ -90,24 +90,30 @@ public class NotificationDialog {
 	/**
 	 * Show.
 	 * No fading
+	 *
+	 * @param colors the colors
+	 * @param fonts the fonts
 	 */
-	public void show() {
-		this.show(false);
+	public void show(INotificationColors colors, INotificationFonts fonts) {
+		this.show(colors, fonts, false);
 	}
 
 	/**
 	 * Show.
 	 *
+	 * @param colors the colors
+	 * @param fonts the fonts
 	 * @param fade the fading option
 	 */
-	public void show(boolean fade) {
+	public void show(INotificationColors colors, INotificationFonts fonts,
+			boolean fade) {
 		this.shell = new Shell(this.display, SWT.NO_TRIM | SWT.ON_TOP);
-		this.configureShell();
+		this.configureShell(colors, fonts);
 		this.shell.pack();
 
 		// TODO Position
 
-		// TODO Region
+		// TODO Region (round rectangle)
 
 		// Register selection listener
 		if (this.listener != null) {
@@ -133,28 +139,31 @@ public class NotificationDialog {
 
 	/**
 	 * Creates the shell content.
+	 *
+	 * @param colors the colors
+	 * @param fonts the fonts
 	 */
-	protected void configureShell() {
+	protected void configureShell(INotificationColors colors,
+			INotificationFonts fonts) {
 		assert this.display != null;
 		assert this.shell != null;
 		assert this.notification != null;
 
-		// TODO Check Layout 
-		// TODO fonts
+		// TODO fix Layout 
 
 		// Shell
 		this.shell.setLayout(new GridLayout());
 		this.shell.setAlpha(TRANSPARENCY_DEFAULT);
-		if (this.colors != null) {
-			this.shell.setBackground(this.colors.getBackgroundColor());
-			this.shell.setForeground(this.colors.getForegroundColor());
+		if (colors != null) {
+			this.shell.setBackground(colors.getBackgroundColor());
+			this.shell.setForeground(colors.getForegroundColor());
 		}
 
 		// Icon
 		this.lblIcon = new Label(this.shell, SWT.NONE);
 		// TODO set image from url
-		if (this.colors != null) {
-			this.lblIcon.setBackground(this.colors.getBackgroundColor());
+		if (colors != null) {
+			this.lblIcon.setBackground(colors.getBackgroundColor());
 		}
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, false, true);
 		gridData.verticalSpan = 2;
@@ -165,9 +174,12 @@ public class NotificationDialog {
 		if (this.notification.getTitle() != null) {
 			this.lblTitle.setText(this.notification.getTitle());
 		}
-		if (this.colors != null) {
-			this.lblTitle.setForeground(this.colors.getTitleColor());
-			this.lblTitle.setBackground(this.colors.getBackgroundColor());
+		if (colors != null) {
+			this.lblTitle.setForeground(colors.getTitleColor());
+			this.lblTitle.setBackground(colors.getBackgroundColor());
+		}
+		if (fonts != null) {
+			this.lblTitle.setFont(fonts.getTitleFont());
 		}
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		this.lblTitle.setLayoutData(gridData);
@@ -175,9 +187,12 @@ public class NotificationDialog {
 		// Message
 		this.lblMessage = new Label(this.shell, SWT.NONE);
 		this.lblMessage.setText(this.notification.getMessage());
-		if (this.colors != null) {
-			this.lblMessage.setForeground(this.colors.getMessageColor());
-			this.lblMessage.setBackground(this.colors.getBackgroundColor());
+		if (colors != null) {
+			this.lblMessage.setForeground(colors.getMessageColor());
+			this.lblMessage.setBackground(colors.getBackgroundColor());
+		}
+		if (fonts != null) {
+			this.lblMessage.setFont(fonts.getMessageFont());
 		}
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.minimumWidth = 200;

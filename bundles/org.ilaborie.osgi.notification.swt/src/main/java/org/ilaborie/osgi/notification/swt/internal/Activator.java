@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 import org.ilaborie.osgi.notification.swt.INotificationColors;
+import org.ilaborie.osgi.notification.swt.INotificationFonts;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -30,6 +31,9 @@ public class Activator implements BundleActivator {
 
 	/** The notification colors. */
 	private static NotificationColorsImpl notificationColors;
+
+	/** The notification fonts. */
+	private static NotificationFontsImpl notificationFonts;
 
 	/**
 	 * Gets the context.
@@ -51,6 +55,9 @@ public class Activator implements BundleActivator {
 		// Initialize colors
 		Activator.notificationColors = new NotificationColorsImpl();
 
+		// Initialize fonts
+		Activator.notificationFonts = new NotificationFontsImpl();
+
 		// Initialize Image Map
 		images = new HashMap<String, Image>();
 	}
@@ -66,6 +73,11 @@ public class Activator implements BundleActivator {
 		// clean colors
 		if (Activator.notificationColors != null) {
 			Activator.notificationColors.dispose();
+		}
+
+		// clean fonts
+		if (Activator.notificationFonts != null) {
+			Activator.notificationFonts.dispose();
 		}
 
 		// Clean images
@@ -129,6 +141,19 @@ public class Activator implements BundleActivator {
 			colors = notificationColors;
 		}
 		return colors;
+	}
+
+	/**
+	 * Gets the i notification fonts.
+	 *
+	 * @return the i notification fonts
+	 */
+	public static INotificationFonts getINotificationFonts() {
+		INotificationFonts fonts = null;
+		if (notificationFonts != null) {
+			fonts = notificationFonts;
+		}
+		return fonts;
 	}
 
 }

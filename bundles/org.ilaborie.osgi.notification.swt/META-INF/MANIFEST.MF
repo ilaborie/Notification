@@ -8,6 +8,7 @@ Bundle-Vendor: Igor Laborie
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.eclipse.swt,
  org.eclipse.swt.custom,
+ org.eclipse.swt.events,
  org.eclipse.swt.graphics,
  org.eclipse.swt.layout,
  org.eclipse.swt.widgets,
