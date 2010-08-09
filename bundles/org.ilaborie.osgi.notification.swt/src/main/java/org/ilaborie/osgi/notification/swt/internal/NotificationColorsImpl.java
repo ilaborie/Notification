@@ -66,7 +66,7 @@ public class NotificationColorsImpl implements INotificationColors {
 		if (result == null) {
 			Display display = Display.getDefault();
 			Color systemColor = display
-					.getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
+					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
 			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.BACKGROUND, result);
 		}
@@ -82,7 +82,7 @@ public class NotificationColorsImpl implements INotificationColors {
 		if (result == null) {
 			Display display = Display.getDefault();
 			Color systemColor = display
-					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
+					.getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
 			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.FOREGROUND, result);
 		}
@@ -98,7 +98,7 @@ public class NotificationColorsImpl implements INotificationColors {
 		if (result == null) {
 			Display display = Display.getDefault();
 			Color systemColor = display
-					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
+					.getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
 			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.TITLE_FOREGROUND, result);
 		}
@@ -114,7 +114,7 @@ public class NotificationColorsImpl implements INotificationColors {
 		if (result == null) {
 			Display display = Display.getDefault();
 			Color systemColor = display
-					.getSystemColor(SWT.COLOR_TITLE_FOREGROUND);
+					.getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
 			result = new Color(display, systemColor.getRGB());
 			this.colors.put(ColorKey.MESSAGE_FOREGROUND, result);
 		}

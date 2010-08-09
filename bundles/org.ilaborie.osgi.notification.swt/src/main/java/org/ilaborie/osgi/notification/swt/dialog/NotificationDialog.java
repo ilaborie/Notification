@@ -4,8 +4,6 @@
 package org.ilaborie.osgi.notification.swt.dialog;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ShellAdapter;
-import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -60,9 +58,6 @@ public class NotificationDialog {
 	}
 
 	// Attributes
-
-	/** The stacked position. */
-	private static Integer stackedPosition = 0;
 
 	/** The display. */
 	private final Display display;
@@ -128,32 +123,14 @@ public class NotificationDialog {
 		this.configureShell(colors, fonts);
 		this.shell.pack();
 
-		this.shell.addShellListener(new ShellAdapter() {
-			/* (non-Javadoc)
-			 * @see org.eclipse.swt.events.ShellAdapter#shellClosed(org.eclipse.swt.events.ShellEvent)
-			 */
-			@Override
-			public void shellClosed(ShellEvent e) {
-				synchronized (stackedPosition) {
-					stackedPosition -= shell.getSize().y + VERTICAL_PADDING;
-					System.out.println("Stacked: " + stackedPosition);
-				}
-				super.shellClosed(e);
-			}
-		});
-
 		// Register selection listener
 		if (this.listener != null) {
 			this.shell.addListener(SWT.Selection, this.listener);
 		}
 
 		// Position
-		synchronized (NotificationDialog.stackedPosition) {
-			Point location = this.getLocation();
-			this.shell.setLocation(location);
-			stackedPosition += this.shell.getSize().y + VERTICAL_PADDING;
-			System.out.println("Stacked: " + stackedPosition);
-		}
+		Point location = this.getLocation();
+		this.shell.setLocation(location);
 
 		// Region
 		Rectangle bounds = new Rectangle(0, 0, this.shell.getSize().x,
@@ -239,7 +216,7 @@ public class NotificationDialog {
 	 * @param r the r
 	 * @param offsetX the offset x
 	 * @param offsetY the offset y
-	 * @return the int[]
+	 * @return the path
 	 */
 	private int[] circle(int r, int offsetX, int offsetY) {
 		final int[] polygon = new int[8 * r + 4];
@@ -270,8 +247,7 @@ public class NotificationDialog {
 		Point result = new Point(0, 0);
 		result.x = (clientArea.x + clientArea.width)
 				- (this.shell.getSize().x + HORIZONTAL_PADDING + 2 * RADIUS);
-		result.y = (clientArea.y)
-				+ (this.shell.getSize().y + VERTICAL_PADDING + NotificationDialog.stackedPosition);
+		result.y = (clientArea.y) + (this.shell.getSize().y + VERTICAL_PADDING);
 		return result;
 	}
 
@@ -288,7 +264,10 @@ public class NotificationDialog {
 		assert this.notification != null;
 
 		// Shell
-		this.shell.setLayout(new GridLayout(2, false));
+		GridLayout layout = new GridLayout(2, false);
+		layout.marginHeight = RADIUS;
+		layout.marginWidth = RADIUS;
+		this.shell.setLayout(layout);
 		if (colors != null) {
 			this.shell.setBackground(colors.getBackgroundColor());
 			this.shell.setForeground(colors.getForegroundColor());
