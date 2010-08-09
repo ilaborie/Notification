@@ -59,7 +59,7 @@ public class ShellCloser implements Runnable {
 		 */
 		@Override
 		public void mouseExit(MouseEvent e) {
-			this.mouseOver = true;
+			this.mouseOver = false;
 			if (this.needToClose) {
 				this.shellCloser.closeShell();
 			}
