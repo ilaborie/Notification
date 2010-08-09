@@ -272,6 +272,7 @@ public class NotificationDialog {
 			this.shell.setBackground(colors.getBackgroundColor());
 			this.shell.setForeground(colors.getForegroundColor());
 		}
+		this.shell.setCursor(this.display.getSystemCursor(SWT.CURSOR_HAND));
 
 		// Icon
 		this.lblIcon = new Label(this.shell, SWT.NONE);
