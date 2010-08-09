@@ -38,15 +38,20 @@ public class NotificationCommandProvider implements CommandProvider {
 	 * @return <code>null</code>
 	 */
 	public Object _notify(CommandInterpreter intp) {
-		String message = intp.nextArgument();
+		String arg0 = intp.nextArgument();
 		if (this.notificationService == null) {
 			intp.println("No notification service available !"); //$NON-NLS-1$
-		} else if (message == null || "".equals(message)) { //$NON-NLS-1$
+		} else if (arg0 == null || "".equals(arg0)) { //$NON-NLS-1$
 			intp.println("No message specified !"); //$NON-NLS-1$
 		} else {
-			assert message != null;
-			String title = intp.nextArgument();
-			INotification notification = new NotificationImpl(title, message);
+			assert arg0 != null;
+			String arg1 = intp.nextArgument();
+			INotification notification;
+			if (arg1 == null || "".equals(arg1)) { //$NON-NLS-1$
+				notification = new NotificationImpl(arg0);
+			} else {
+				notification = new NotificationImpl(arg0, arg1);
+			}
 			this.notificationService.show(notification);
 		}
 		return null;
