@@ -6,6 +6,7 @@ package org.ilaborie.osgi.notification.swt.dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -18,6 +19,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.ilaborie.osgi.notification.INotification;
 import org.ilaborie.osgi.notification.swt.INotificationColors;
 import org.ilaborie.osgi.notification.swt.INotificationFonts;
+import org.ilaborie.osgi.notification.swt.internal.Activator;
 
 /**
  * The Class NotificationDialog.
@@ -217,7 +219,8 @@ public class NotificationDialog {
 
 		// Icon
 		this.lblIcon = new Label(this.shell, SWT.NONE);
-		// TODO set image from url
+		Image image = Activator.getImage(this.notification.getImageUrl());
+		this.lblIcon.setImage(image);
 		if (colors != null) {
 			this.lblIcon.setBackground(colors.getBackgroundColor());
 		}

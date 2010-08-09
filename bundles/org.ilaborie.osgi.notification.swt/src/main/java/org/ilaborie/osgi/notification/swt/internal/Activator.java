@@ -16,6 +16,8 @@ import org.ilaborie.osgi.notification.swt.INotificationColors;
 import org.ilaborie.osgi.notification.swt.INotificationFonts;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogService;
 
 /**
  * The Class Activator.
@@ -25,8 +27,14 @@ public class Activator implements BundleActivator {
 	/** The context. */
 	private static BundleContext context;
 
+	/** The log service. */
+	private static LogService logService;
+
 	/** The images. */
-	private static Map<String, Image> images;
+	private static Map<URL, Image> images;
+
+	/** The default image url. */
+	private static URL defaultImageURL;
 
 	/** The notification colors. */
 	private static NotificationColorsImpl notificationColors;
@@ -51,6 +59,13 @@ public class Activator implements BundleActivator {
 	public void start(BundleContext bundleContext) throws Exception {
 		Activator.context = bundleContext;
 
+		// Log service
+		ServiceReference reference = bundleContext
+				.getServiceReference(LogService.class.getName());
+		if (reference != null) {
+			logService = (LogService) bundleContext.getService(reference);
+		}
+
 		// Initialize colors
 		Activator.notificationColors = new NotificationColorsImpl();
 
@@ -58,7 +73,9 @@ public class Activator implements BundleActivator {
 		Activator.notificationFonts = new NotificationFontsImpl();
 
 		// Initialize Image Map
-		images = new HashMap<String, Image>();
+		defaultImageURL = bundleContext.getBundle().getResource(
+				"icons/bell.png"); //$NON-NLS-1$
+		images = new HashMap<URL, Image>();
 	}
 
 	/*
@@ -91,40 +108,40 @@ public class Activator implements BundleActivator {
 	/**
 	 * Gets the image.
 	 *
-	 * @param imagePath the image path
+	 * @param url the url
 	 * @return the image
 	 */
-	public static Image getImage(String imagePath) {
-		// TODO retrieve a LogService for logging exception
-		Image result = images.get(imagePath);
-		if (result == null) {
-			// Lookup image into icons folder
-			URL url = context.getBundle().getEntry(imagePath);
-			if (url != null) {
-				InputStream in = null;
-				try {
-					in = new BufferedInputStream(url.openStream());
-					result = new Image(Display.getDefault(), new ImageData(in));
-				} catch (SWTException e) {
-					if (e.code != SWT.ERROR_INVALID_IMAGE) {
-						throw e;
-						// fall through otherwise
-					}
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				} finally {
-					try {
-						if (in != null) {
-							in.close();
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-						// Cannot do more
-					}
-				}
+	public static Image getImage(URL url) {
+		Image result = null;
+		InputStream in = null;
+		try {
+			result = images.get(url);
+			if (result == null && url != null) {
+				in = new BufferedInputStream(url.openStream());
+				result = new Image(Display.getDefault(), new ImageData(in));
+				images.put(url, result);
 			}
+		} catch (SWTException e) {
+			logService.log(LogService.LOG_ERROR, e.getMessage(), e);
+			if (e.code != SWT.ERROR_INVALID_IMAGE) {
+				throw e;
+				// fall through otherwise
+			}
+		} catch (IOException ex) {
+			logService.log(LogService.LOG_ERROR, ex.getMessage(), ex);
+		} finally {
+			try {
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException e) {
+				logService.log(LogService.LOG_ERROR, e.getMessage(), e);
+			}
+		}
 
-			images.put(imagePath, result);
+		// Use default image
+		if (result == null && defaultImageURL != null) {
+			result = getImage(defaultImageURL);
 		}
 		return result;
 	}
