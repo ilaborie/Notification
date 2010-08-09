@@ -9,6 +9,7 @@ import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
@@ -29,6 +30,10 @@ import org.ilaborie.osgi.notification.swt.internal.Activator;
 public class NotificationDialog {
 
 	// Constants
+
+	/** The radius. */
+	private static int RADIUS = 8;
+
 	/** The default transparency. */
 	private static final int ALPHA_DEFAULT = 0xEE;
 
@@ -150,7 +155,13 @@ public class NotificationDialog {
 			System.out.println("Stacked: " + stackedPosition);
 		}
 
-		// TODO Region (round rectangle)
+		// Region
+		Rectangle bounds = new Rectangle(0, 0, this.shell.getSize().x,
+				this.shell.getSize().y);
+		Region region = this.buildRoundedRectangularRegion(bounds, RADIUS);
+		this.shell.setRegion(region);
+		this.shell.setSize(bounds.width + 2 * RADIUS, bounds.height + 2
+				* RADIUS);
 
 		// Fading
 		if (fade) {
@@ -177,7 +188,73 @@ public class NotificationDialog {
 				this.display.sleep();
 			}
 		}
+		region.dispose();
 		this.display.dispose();
+	}
+
+	/**
+	 * Builds the rounded rectangular region.
+	 *
+	 * @param bounds the bounds
+	 * @param radius the radius
+	 * @return the region
+	 */
+	private Region buildRoundedRectangularRegion(Rectangle bounds, int radius) {
+		Region region = new Region();
+		Point p;
+		region.add(bounds.x + radius, bounds.y + radius, bounds.width,
+				bounds.height);
+		// Top
+		p = new Point(bounds.x + radius, bounds.y);
+		region.add(new Rectangle(p.x, p.y, bounds.width, radius));
+
+		// Right
+		p = new Point(bounds.x + bounds.width + radius, bounds.y + radius);
+		region.add(new Rectangle(p.x, p.y, radius, bounds.height));
+
+		// Bottom
+		p = new Point(bounds.x + radius, bounds.y + bounds.height + radius);
+		region.add(new Rectangle(p.x, p.y, bounds.width, radius));
+
+		// Left
+		p = new Point(bounds.x, bounds.y + radius);
+		region.add(new Rectangle(p.x, p.y, radius, bounds.height));
+
+		// Corners
+		p = new Point(bounds.x + radius, bounds.y + radius);
+		// TopLeft
+		region.add(circle(radius, p.x, p.y));
+		// TopRight
+		region.add(circle(radius, p.x + bounds.width, p.y));
+		// BottomRight
+		region.add(circle(radius, p.x + bounds.width, p.y + bounds.height));
+		// BottomLeft
+		region.add(circle(radius, p.x, p.y + bounds.height));
+		return region;
+	}
+
+	/**
+	 * Circle.
+	 *
+	 * @param r the r
+	 * @param offsetX the offset x
+	 * @param offsetY the offset y
+	 * @return the int[]
+	 */
+	private int[] circle(int r, int offsetX, int offsetY) {
+		final int[] polygon = new int[8 * r + 4];
+		//x^2 + y^2 = r^2
+		int x;
+		int y;
+		for (int i = 0; i < 2 * r + 1; i++) {
+			x = i - r;
+			y = (int) Math.sqrt(r * r - x * x);
+			polygon[2 * i] = offsetX + x;
+			polygon[2 * i + 1] = offsetY + y;
+			polygon[8 * r - 2 * i - 2] = offsetX + x;
+			polygon[8 * r - 2 * i - 1] = offsetY - y;
+		}
+		return polygon;
 	}
 
 	/**
@@ -192,7 +269,7 @@ public class NotificationDialog {
 		Rectangle clientArea = monitor.getClientArea();
 		Point result = new Point(0, 0);
 		result.x = (clientArea.x + clientArea.width)
-				- (this.shell.getSize().x + HORIZONTAL_PADDING);
+				- (this.shell.getSize().x + HORIZONTAL_PADDING + 2 * RADIUS);
 		result.y = (clientArea.y)
 				+ (this.shell.getSize().y + VERTICAL_PADDING + NotificationDialog.stackedPosition);
 		return result;
